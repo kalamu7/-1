@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>भूगोलसम्बन्धी अन्तरक्रियात्मक क्विज</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .quiz-container { max-width: 650px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #333; font-size: 1.25rem; margin-bottom: 15px; }
+        .option-btn { display: block; width: 100%; margin: 10px 0; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; background: #fff; cursor: pointer; text-align: left; transition: background 0.2s; }
+        .option-btn:hover { background-color: #f0f0f0; }
+        .correct { background-color: #76ff03 !important; font-weight: bold; border-color: #52b202; }
+        .wrong { background-color: #ff5252 !important; color: white; border-color: #c62828; }
+        .navigation-btns { margin-top: 20px; display: flex; justify-content: space-between; }
+        button.nav-btn { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button.nav-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .progress { font-size: 0.9rem; color: #666; margin-bottom: 10px; font-weight: bold; }
+        #completion-msg { margin-top: 20px; font-size: 1.4rem; font-weight: bold; text-align: center; color: #28a745; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="progress" class="progress"></div>
+    <div id="quiz"></div>
+    <div id="completion-msg">🎉 सबै प्रश्नहरूको अभ्यास पूरा भयो! बधाई छ!</div>
+    <div class="navigation-btns">
+        <button id="prev-btn" class="nav-btn" onclick="prevQuestion()" disabled>पछिल्लो (Previous)</button>
+        <button id="next-btn" class="nav-btn" onclick="nextQuestion()" style="display: none;">अर्को प्रश्न (Next Question) &rarr;</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { question: "१. खप्तड ताल कुन जिल्लामा पर्छ ?", options: ["तनहुँ", "पाल्पा", "उदयपुर", "डोटी"], answer: 3 },
+        { question: "२. बैकुण्ठे ताल कुन जिल्लामा पर्छ ?", options: ["तनहुँ", "पाल्पा", "उदयपुर", "चितवन"], answer: 3 },
+        { question: "३. हयातुङ झरना कुन जिल्लामा पर्छ ?", options: ["पाँचथर", "तेह्रथुम", "म्याग्दी", "पाल्पा"], answer: 1 },
+        { question: "४. फुङफुङे झरना कुन जिल्लामा पर्छ ?", options: ["नुवाकोट", "म्याग्दी", "ताप्लेजुङ", "डोल्पा"], answer: 2 },
+        { question: "५. नेपाल समुद्र सतहबाट कति टाढा छ ?", options: ["५१० किलोमिटर", "१०८० किलोमिटर", "२९२६ किलोमिटर", "११२७ किलोमिटर"], answer: 3 },
+        { question: "६. नेपालको उत्तर-दक्षिण औसत चौडाइ कति हो ?", options: ["१४१ किलोमिटर", "२४१ किलोमिटर", "१९३ किलोमिटर", "८८५ किलोमिटर"], answer: 2 },
+        { question: "७. नेपालको पूर्व-पश्चिम औसत लम्बाइ कति हो ?", options: ["१४१ किलोमिटर", "२४१ किलोमिटर", "१९३ किलोमिटर", "८८५ किलोमिटर"], answer: 3 },
+        { question: "८. नेपालले एसियाको कति प्रतिशत भूभाग ओगटेको छ ?", options: ["०.०३ प्रतिशत", "०.३ प्रतिशत", "३ प्रतिशत", "२.८२ प्रतिशत"], answer: 1 },
+        { question: "९. नेपालको क्षेत्रफल कति हो ?", options: ["१४७१८१ स्क्वायर किलोमिटर", "१४७११८ स्क्वायर किलोमिटर", "१७४१८१ स्क्वायर किलोमिटर", "५६८२९ स्क्वायर किलोमिटर"], answer: 0 }
+    ];
+
+    let currentQuestionIndex = 0;
+    const userAnswers = new Array(questions.length).fill(null);
+
+    function loadQuestion() {
+        document.getElementById("next-btn").style.display = "none";
+        const q = questions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `प्रश्न ${currentQuestionIndex + 1} / ${questions.length}`;
+        document.getElementById("completion-msg").style.display = "none";
+        
+        let html = `<h2>${q.question}</h2>`;
+        q.options.forEach((opt, index) => {
+            let btnClass = 'option-btn';
+            let disabledAttr = '';
+            
+            if (userAnswers[currentQuestionIndex] !== null) {
+                disabledAttr = 'disabled';
+                if (index === q.answer) {
+                    btnClass += ' correct';
+                } else if (index === userAnswers[currentQuestionIndex]) {
+                    btnClass += ' wrong';
+                }
+            }
+            
+            html += `<button class="${btnClass}" ${disabledAttr} onclick="checkAnswer(${index})">${opt}</button>`;
+        });
+
+        document.getElementById("quiz").innerHTML = html;
+        document.getElementById("prev-btn").disabled = currentQuestionIndex === 0;
+    }
+
+    function checkAnswer(selectedIndex) {
+        userAnswers[currentQuestionIndex] = selectedIndex;
+        
+        const q = questions[currentQuestionIndex];
+        const buttons = document.querySelectorAll("#quiz .option-btn");
+        
+        buttons.forEach((btn, idx) => {
+            btn.disabled = true;
+            if (idx === q.answer) {
+                btn.classList.add('correct');
+            } else if (idx === selectedIndex) {
+                btn.classList.add('wrong');
+            }
+        });
+
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            document.getElementById("quiz").innerHTML = "";
+            document.getElementById("progress").style.display = "none";
+            document.getElementById("prev-btn").style.display = "none";
+            document.getElementById("next-btn").style.display = "none";
+            document.getElementById("completion-msg").style.display = "block";
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
+
